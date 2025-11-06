@@ -2,7 +2,7 @@ const Task = require("../models/Task");
 
 // Fetch all tasks for logged-in user
 const getTasks = async (req, res) => {
-    const tasks = await Task.find({ user: req.user.i_id });
+    const tasks = await Task.find({ user: req.user._id });
     res.json(tasks);
 }
 
@@ -50,7 +50,7 @@ const deleteTask = async (req, res) => {
     }
 
     // Check ownership
-    if (task.user.toString() !== req.user.id) {
+    if (task.user.toString() !== req.user._id) {
       return res.status(401).json({ message: 'Not authorized' });
     }
 
