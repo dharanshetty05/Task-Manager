@@ -1,43 +1,77 @@
+const { CATEGORIES, DEFAULT_CATEGORY } = require("../constants/categories");
 const Task = require("../models/Task");
 
 // Fetch all tasks for logged-in user
 const getTasks = async (req, res) => {
-    const tasks = await Task.find({ user: req.user._id });
-    res.json(tasks);
+
+    try{
+      const { category } = req.query;
+      const query = { user: req.user._id };
+
+      // If filtered by category
+      if (category && CATEGORIES.includes(category)){
+        query.category = category;
+      }
+
+      const tasks = await Task.find(query);
+      res.json(tasks);
+    } catch (error){
+      console.error("Error fetching tasks:", error);
+      res.status(500).json({ message: "Server error" });
+    }
 }
 
 // Create a new task
 const createTask = async (req, res) => {
-    const { title, description } = req.body;
+  try{
+    const { title, description, category } = req.body;
+
+    const categoryToUse = CATEGORIES.includes(category) ? category : DEFAULT_CATEGORY;
 
     const task = new Task({
         title,
         description,
         user: req.user._id,
+        category: categoryToUse,
     });
 
     const createdTask = await task.save();
     res.status(201).json(createdTask);
+  } catch (error) {
+    console.error("Error creating task:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 // Update a task
 const updateTask = async (req, res) => {
-  const task = await Task.findById(req.params.id);
-
-  if (!task) {
-    return res.status(404).json({ message: "Task not found" });
+  try{
+    const task = await Task.findById(req.params.id);
+  
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+  
+    if (task.user.toString() !== req.user._id.toString()) {
+      return res.status(401).json({ message: "Not authorized" });
+    }
+  
+    const newCategory = req.body.category;
+    if (newCategory && !CATEGORIES.includes(newCategory)) {
+      return res.status(400).json({ message: "Invalid category" });
+    }
+  
+    task.title = req.body.title || task.title;
+    task.description = req.body.description || task.description;
+    task.completed = req.body.completed ?? task.completed;
+    task.category = newCategory || task.category;
+  
+    const updatedTask = await task.save();
+    res.json(updatedTask);
+  } catch(error){
+    console.error("Error updating task: ", error);
+    return res.status(500).json({ message: "Server error" });
   }
-
-  if (task.user.toString() !== req.user._id.toString()) {
-    return res.status(401).json({ message: "Not authorized" });
-  }
-
-  task.title = req.body.title || task.title;
-  task.description = req.body.description || task.description;
-  task.completed = req.body.completed ?? task.completed;
-
-  const updatedTask = await task.save();
-  res.json(updatedTask);
 };
 
 // Delete a task
@@ -55,7 +89,6 @@ const deleteTask = async (req, res) => {
     }
 
     await Task.deleteOne({ _id: task._id });
-
     res.status(200).json({ message: 'Task removed' });
   } catch (error) {
     res.status(500).json({ message: error.message });

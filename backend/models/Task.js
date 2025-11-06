@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { CATEGORIES, DEFAULT_CATEGORIES } = require('../constants/categories');
 
 const taskSchema = new mongoose.Schema({
     title: {
@@ -10,11 +11,20 @@ const taskSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    category: {
+        type: String,
+        enum: CATEGORIES,
+        default: DEFAULT_CATEGORIES,
+        required: true
+    },
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true,
     },
 });
+
+taskSchema.index({ user: 1, category: 1, createdAt: -1 });
+
 
 module.exports = mongoose.model('Task', taskSchema);

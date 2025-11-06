@@ -48,29 +48,53 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdateTit
 					{task.completed && <Check size={14} className="md:w-4 md:h-4 text-white" />}
 				</button>
 
-				{isEditing ? (
-					<input
-						autoFocus
-						value={title}
-						onChange={(e) => setTitle(e.target.value)}
-						onKeyDown={(e) => {
-							if (e.key === 'Enter') saveEdit();
-							if (e.key === 'Escape') cancelEdit();
-						}}
-						onBlur={saveEdit}
-						className="flex-1 text-sm md:text-base text-gray-800 border border-gray-200 rounded-md px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-					/>
-				) : (
-					<span
-						className={`flex-1 text-sm md:text-base text-gray-800 break-words ${
-							task.completed
-								? 'line-through text-gray-400 opacity-60'
-								: ''
-						}`}
-					>
-						{task.title}
-					</span>
-				)}
+			<div className="flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3">
+			{isEditing ? (
+				<input
+				autoFocus
+				value={title}
+				onChange={(e) => setTitle(e.target.value)}
+				onKeyDown={(e) => {
+					if (e.key === 'Enter') saveEdit();
+					if (e.key === 'Escape') cancelEdit();
+				}}
+				onBlur={saveEdit}
+				className="flex-1 text-sm md:text-base text-gray-800 border border-gray-200 rounded-md px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+				/>
+			) : (
+				<>
+				{/* Task title */}
+				<span
+					className={`text-sm md:text-base text-gray-800 break-words ${
+					task.completed ? 'line-through text-gray-400 opacity-60' : ''
+					}`}
+				>
+					{task.title}
+				</span>
+
+				{/* Category dropdown (editable) */}
+				<select
+					value={task.category || 'Personal'}
+					onChange={async (e) => {
+					const newCategory = e.target.value;
+					await onUpdateTitle(task._id, task.title, newCategory);
+					}}
+					className={`text-xs font-medium px-2 py-1 rounded-lg border outline-none cursor-pointer transition ${
+					task.category === 'Work'
+						? 'text-blue-700 bg-blue-100 border-blue-200'
+						: task.category === 'Personal'
+						? 'text-green-700 bg-green-100 border-green-200'
+						: 'text-purple-700 bg-purple-100 border-purple-200'
+					}`}
+				>
+					<option value="Work">Work</option>
+					<option value="Personal">Personal</option>
+					<option value="Growth">Growth</option>
+				</select>
+				</>
+			)}
+			</div>
+
 
 				{!isEditing ? (
 					<button
