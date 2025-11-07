@@ -1,5 +1,6 @@
 const { CATEGORIES, DEFAULT_CATEGORY } = require("../constants/categories");
 const Task = require("../models/Task");
+const { PRIORITIES } = require("../constants/priorities");
 
 // Fetch all tasks for logged-in user
 const getTasks = async (req, res) => {
@@ -24,15 +25,20 @@ const getTasks = async (req, res) => {
 // Create a new task
 const createTask = async (req, res) => {
   try{
-    const { title, description, category } = req.body;
+    const { title, description, category, priority, dueDate, notes } = req.body;
 
     const categoryToUse = CATEGORIES.includes(category) ? category : DEFAULT_CATEGORY;
+
+    const priorityToUse = PRIORITIES.includes(priority) ? priority : 'Medium';
 
     const task = new Task({
         title,
         description,
         user: req.user._id,
         category: categoryToUse,
+        priority: priorityToUse,
+        dueDate: dueDate || null,
+        notes: notes || '',
     });
 
     const createdTask = await task.save();
@@ -60,11 +66,19 @@ const updateTask = async (req, res) => {
     if (newCategory && !CATEGORIES.includes(newCategory)) {
       return res.status(400).json({ message: "Invalid category" });
     }
+
+    const newPriority = req.body.priority;
+    if (newPriority && !PRIORITIES.includes(newPriority)) {
+      return res.status(400).json({ message: "Invalid priority" });
+    }
   
     task.title = req.body.title || task.title;
     task.description = req.body.description || task.description;
     task.completed = req.body.completed ?? task.completed;
     task.category = newCategory || task.category;
+    task.priority = newPriority || task.priority;
+    task.dueDate = req.body.dueDate || task.dueDate;
+    task.notes = req.body.notes ?? task.notes;
   
     const updatedTask = await task.save();
     res.json(updatedTask);

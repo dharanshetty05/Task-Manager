@@ -46,14 +46,14 @@ export default function DashboardPage() {
 		}
 	}
 
-	async function addTask({ title, category }) {
+	async function addTask({ title, category, priority, dueDate, notes }) {
 		if (!title.trim()) return;
 		setSubmitting(true);
 		setError('');
 		try {
 			const res = await authFetch('/tasks', {
 				method: 'POST',
-				body: JSON.stringify({ title, category })
+				body: JSON.stringify({ title, category, priority, dueDate, notes })
 			});
 			if (!res.ok) throw new Error('Failed to create task');
 			const data = await res.json();

@@ -34,7 +34,11 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdateTit
 			animate={{ opacity: 1, y: 0 }}
 			exit={{ opacity: 0, x: -20 }}
 			transition={{ duration: 0.2 }}
-			className="bg-white rounded-lg p-3 md:p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200"
+			className={`bg-white rounded-lg p-3 md:p-4 shadow-sm border ${
+			new Date(task.dueDate) < new Date() && !task.completed
+			? 'border-red-200'
+			: 'border-gray-100'
+			} hover:shadow-md transition-shadow duration-200`}
 		>
 			<div className="flex items-center gap-2 md:gap-3">
 				<button
@@ -94,6 +98,49 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdateTit
 				</>
 			)}
 			</div>
+
+			{/* Priority, Due Date, Notes */}
+			<div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs text-gray-600">
+			{/* Priority Badge */}
+			{task.priority && (
+				<span
+				className={`inline-block px-2 py-1 rounded-full font-medium ${
+					task.priority === 'High'
+					? 'bg-red-100 text-red-700'
+					: task.priority === 'Medium'
+					? 'bg-yellow-100 text-yellow-700'
+					: 'bg-green-100 text-green-700'
+				}`}
+				>
+				🔥 {task.priority} Priority
+				</span>
+			)}
+
+			{/* Due Date */}
+			{task.dueDate && (
+				<span
+				className={`mt-1 sm:mt-0 sm:ml-3 px-2 py-1 rounded-lg ${
+					new Date(task.dueDate) < new Date()
+					? 'bg-red-50 text-red-600 font-medium'
+					: 'bg-blue-50 text-blue-600'
+				}`}
+				>
+				🗓️ {new Date(task.dueDate).toLocaleDateString('en-IN', {
+					day: '2-digit',
+					month: 'short',
+					year: 'numeric',
+				})}
+				</span>
+			)}
+			</div>
+
+			{/* Notes */}
+			{task.notes && (
+			<div className="mt-2 text-sm text-gray-700 bg-gray-50 border border-gray-100 rounded-md p-2">
+				🗒️ {task.notes}
+			</div>
+			)}
+
 
 
 				{!isEditing ? (
