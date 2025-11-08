@@ -52,7 +52,7 @@ export default function TaskInput({ newTask, setNewTask, onAddTask }) {
             value={priority} 
             onChange={(e) => setPriority(e.target.value)} className='sm:w-32 px-3 py-3 text-sm text-gray-700 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500'>
               {PRIORITIES.map((p) => (
-                <option key={p} value="{p}">
+                <option key={p} value={p}>
                   {p}
                 </option>
               ))}

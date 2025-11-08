@@ -98,7 +98,7 @@ const deleteTask = async (req, res) => {
     }
 
     // Check ownership
-    if (task.user.toString() !== req.user._id) {
+    if (task.user.toString() !== req.user._id.toString()) {
       return res.status(401).json({ message: 'Not authorized' });
     }
 

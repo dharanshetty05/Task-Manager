@@ -17,6 +17,8 @@ export default function DashboardPage() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
 	const [submitting, setSubmitting] = useState(false);
+	const [sortOption, setSortOption] = useState('Newest');
+	const [showCompleted, setShowCompleted] = useState('All');
 
 	useEffect(() => {
 		const token = getToken();
@@ -129,6 +131,30 @@ export default function DashboardPage() {
 						<EmptyState />
 					) : (
 						<>
+							{/* Sorting and Completion Filter */}
+							<div className='flex flex-wrap justify-center gap-3 mb-4'>
+								{/* Sorting dropdown */}
+								<select
+									value={sortOption}
+									onChange={(e) => setSortOption(e.target.value)}
+									className='px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 focus:ring-2 focus:ring-indigo-500'>
+										<option value="Newest">🕒 Newest first</option>
+										<option value="Oldest">Oldest first</option>
+										<option value="DueSoon">📅 Due soonest</option>
+										<option value="Priority">🔥 Priority (High first)</option>
+								</select>
+
+								{/* Completed / Pending Filter */}
+								<select
+									value={showCompleted}
+									onChange={(e) => setShowCompleted(e.target.value)}
+									className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 focus:ring-2 focus:ring-indigo-500"
+								>
+									<option value="All">All Tasks</option>
+									<option value="Pending">Pending Only</option>
+									<option value="Completed">Completed Only</option>
+								</select>
+							</div>
 							<div className="flex justify-center gap-3 mb-4">
 								{['All', 'Work', 'Personal', 'Growth'].map((cat) => (
 								<button
@@ -147,9 +173,44 @@ export default function DashboardPage() {
 
 							<TaskList
 								tasks={
-								filter === 'All'
-									? tasks
-									: tasks.filter((t) => t.category === filter)
+								(() => {
+									let visibleTasks =
+									filter === 'All'
+										? tasks
+										: tasks.filter((t) => t.category === filter);
+
+											// Filter by completion
+											if (showCompleted === 'Pending') {
+											visibleTasks = visibleTasks.filter((t) => !t.completed);
+											} else if (showCompleted === 'Completed') {
+											visibleTasks = visibleTasks.filter((t) => t.completed);
+											}
+
+											// Sort tasks
+											if (sortOption === 'Newest') {
+											visibleTasks.sort(
+												(a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+											);
+											} else if (sortOption === 'Oldest') {
+											visibleTasks.sort(
+												(a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+											);
+											} else if (sortOption === 'DueSoon') {
+											visibleTasks.sort((a, b) => {
+												if (!a.dueDate) return 1;
+												if (!b.dueDate) return -1;
+												return new Date(a.dueDate) - new Date(b.dueDate);
+											});
+											} else if (sortOption === 'Priority') {
+											const priorityRank = { High: 1, Medium: 2, Low: 3 };
+											visibleTasks.sort(
+												(a, b) =>
+												(priorityRank[a.priority] || 4) - (priorityRank[b.priority] || 4)
+											);
+											}
+
+											return visibleTasks;
+										})()
 								}
 								onToggleComplete={toggleComplete}
 								onDelete={deleteTask}
