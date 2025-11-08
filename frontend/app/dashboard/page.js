@@ -8,6 +8,7 @@ import TaskInput from '../components/TaskInput';
 import TaskList from '../components/TaskList';
 import EmptyState from '../components/EmptyState';
 import { authFetch, getToken } from '../lib/api';
+import CalendarView from '../components/CalendarView';
 
 export default function DashboardPage() {
 	const [filter, setFilter] = useState('All');
@@ -19,6 +20,7 @@ export default function DashboardPage() {
 	const [submitting, setSubmitting] = useState(false);
 	const [sortOption, setSortOption] = useState('Newest');
 	const [showCompleted, setShowCompleted] = useState('All');
+	const [viewMode, setViewMode] = useState('list');
 
 	useEffect(() => {
 		const token = getToken();
@@ -171,6 +173,30 @@ export default function DashboardPage() {
 								))}
 							</div>
 
+							<div className="flex justify-center gap-3 mb-4">
+								<button
+									onClick={() => setViewMode('list')}
+									className={`px-4 py-2 rounded-lg text-sm font-medium border transition ${
+									viewMode === 'list'
+										? 'bg-indigo-600 text-white border-indigo-600'
+										: 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+									}`}
+								>
+									📋 List View
+								</button>
+								<button
+									onClick={() => setViewMode('calendar')}
+									className={`px-4 py-2 rounded-lg text-sm font-medium border transition ${
+									viewMode === 'calendar'
+										? 'bg-indigo-600 text-white border-indigo-600'
+										: 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+									}`}
+								>
+									📅 Calendar View
+								</button>
+								</div>
+
+						{viewMode === 'list' ? (
 							<TaskList
 								tasks={
 								(() => {
@@ -216,6 +242,9 @@ export default function DashboardPage() {
 								onDelete={deleteTask}
 								onUpdateTitle={updateTitle}
 							/>
+						) : (
+							<CalendarView tasks={tasks} />
+						)}
 						</>
 
 					)}
